@@ -37,7 +37,7 @@ internal abstract class ModeInstanceRefreshBase(string directoryPath, string dig
 
     protected static bool IsDateTimeDifferent(DateTime first, DateTime second)
     {
-        return Math.Abs((first - second).TotalSeconds) > 1;
+        return Math.Abs((first - second).TotalSeconds) >= 1;
     }
 
     protected void PrintRefreshLog(bool toConsole, bool fastRefresh)
