@@ -1,5 +1,6 @@
 ﻿using sfisum.Engine.Modes;
 using sfisum.Engine.Modes.Base;
+using sfisum.Utils;
 
 namespace sfisum.Engine;
 
@@ -66,7 +67,28 @@ public class ConsoleUi
         Console.ResetColor();
     }
 
-    private void SaveDigestPrompt(ModeInstanceBase instance)
+    private static string? GetDigestFilenamePrefix(string directoryPath)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(directoryPath))
+                return null;
+
+            string trimmedPath = directoryPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string fileName = Path.GetFileName(trimmedPath);
+
+            if (fileName is "." or "..")
+                return null;
+
+            return string.IsNullOrEmpty(fileName) ? null : fileName;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private void SaveDigestPrompt(ModeInstanceBase instance, string? digestFilenamePrefix)
     {
         bool success = false;
         while (!success)
@@ -84,7 +106,8 @@ public class ConsoleUi
                     return;
             }
 
-            success = instance.SaveDigest(path);
+            success = instance.SaveDigest(path,
+                Glob.Config.AddPathPrefixToDigestFilename ? digestFilenamePrefix : null);
             if (!success)
             {
                 PrintError("Failed to save digest file. Please try again.\n");
@@ -144,7 +167,7 @@ public class ConsoleUi
             return;
         }
 
-        SaveDigestPrompt(instance);
+        SaveDigestPrompt(instance, GetDigestFilenamePrefix(input));
     }
 
     private void ValidateCui()
@@ -192,7 +215,7 @@ public class ConsoleUi
             return;
         }
 
-        SaveDigestPrompt(instance);
+        SaveDigestPrompt(instance, GetDigestFilenamePrefix(baseDirPath));
     }
 
     private void RefreshCui(bool fastMode)
@@ -245,7 +268,7 @@ public class ConsoleUi
 
         if (instance.TotalToSave > 0)
         {
-            SaveDigestPrompt(instance);
+            SaveDigestPrompt(instance, GetDigestFilenamePrefix(baseDirPath));
         }
     }
 

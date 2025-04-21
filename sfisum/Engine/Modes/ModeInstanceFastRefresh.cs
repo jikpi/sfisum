@@ -372,9 +372,9 @@ internal class ModeInstanceFastRefresh(string directoryPath, string digestPath)
             $"Compared hashes in {sw.ElapsedMilliseconds / 1000.0} seconds.");
     }
 
-    public override bool SaveDigest(string path)
+    public override bool SaveDigest(string path, string? digestFilenamePrefix)
     {
-        return DigestFileManager.WriteDigestFile(path, ValidEntries(), TotalToSave);
+        return DigestFileManager.WriteDigestFile(path, ValidEntries(), TotalToSave, digestFilenamePrefix);
 
         IEnumerable<(FileInfo File, Hash Hash)> ValidEntries()
         {

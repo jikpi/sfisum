@@ -123,11 +123,12 @@ internal static class DigestFileManager
     }
 
     public static bool WriteDigestFile(string? digestFilePath, IEnumerable<(FileInfo File, Hash Hash)> entries,
-        int totalEntries)
+        int totalEntries, string? digestFilenamePrefix)
     {
         try
         {
-            string fileName = $"{DateTime.Now:yyyy-MM-dd_HH-mm}.ddxxh3";
+            string fileName =
+                $"{(digestFilenamePrefix == null ? string.Empty : $"{digestFilenamePrefix}_")}{DateTime.Now:yyyy-MM-dd_HH-mm}.ddxxh3";
 
             string fullPath = string.IsNullOrWhiteSpace(digestFilePath)
                 ? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName)

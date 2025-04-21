@@ -84,9 +84,9 @@ internal class ModeInstanceGenerate(string directoryPath) : ModeInstanceBase
         Console.WriteLine($@"Time to hash: {TimeSpan.FromMilliseconds(sw.ElapsedMilliseconds):hh\:mm\:ss}");
     }
 
-    public override bool SaveDigest(string path)
+    public override bool SaveDigest(string path, string? digestFilenamePrefix)
     {
-        return DigestFileManager.WriteDigestFile(path, ValidEntries(), SuccesfullyHashedFiles);
+        return DigestFileManager.WriteDigestFile(path, ValidEntries(), SuccesfullyHashedFiles, digestFilenamePrefix);
 
         IEnumerable<(FileInfo File, Hash Hash)> ValidEntries()
         {

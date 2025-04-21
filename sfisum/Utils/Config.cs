@@ -9,6 +9,7 @@ internal class Config
     public string? DirectoryWalkPattern { get; init; }
     public bool PrintToLog { get; init; }
     public bool SortDuplicatesBySize { get; init; }
+    public bool AddPathPrefixToDigestFilename { get; init; }
 
     private const string ConfigPath = "sfisum.config.json";
 
@@ -18,7 +19,8 @@ internal class Config
         // OrderDirectoryWalk = false,
         DirectoryWalkPattern = "*",
         PrintToLog = true,
-        SortDuplicatesBySize = true
+        SortDuplicatesBySize = true,
+        AddPathPrefixToDigestFilename = true
     };
 
     public static Config Load()

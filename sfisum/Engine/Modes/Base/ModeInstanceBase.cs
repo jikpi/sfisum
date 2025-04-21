@@ -3,6 +3,6 @@
 internal abstract class ModeInstanceBase
 {
     public abstract void Start();
-    public abstract bool SaveDigest(string path);
+    public abstract bool SaveDigest(string path, string? digestFilenamePrefix);
     public abstract void PrintGeneralEvents(bool toConsole);
 }

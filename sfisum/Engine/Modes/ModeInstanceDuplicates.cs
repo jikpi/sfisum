@@ -71,7 +71,7 @@ internal class ModeInstanceDuplicates(string digestPath) : ModeInstanceBase
         Console.WriteLine($"Compared hashes in {sw.ElapsedMilliseconds / 1000.0} seconds.");
     }
 
-    public override bool SaveDigest(string path)
+    public override bool SaveDigest(string path, string? digestFilenamePrefix)
     {
         return false;
     }
