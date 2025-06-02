@@ -10,6 +10,8 @@ internal class Config
     public bool PrintToLog { get; init; }
     public bool SortDuplicatesBySize { get; init; }
     public bool AddPathPrefixToDigestFilename { get; init; }
+    public bool FindMatchesInRefresh { get; init; }
+    public bool SkipRefreshMatchesForSmallFiles { get; init; }
 
     private const string ConfigPath = "sfisum.config.json";
 
@@ -20,7 +22,9 @@ internal class Config
         DirectoryWalkPattern = "*",
         PrintToLog = true,
         SortDuplicatesBySize = true,
-        AddPathPrefixToDigestFilename = true
+        AddPathPrefixToDigestFilename = true,
+        FindMatchesInRefresh = true,
+        SkipRefreshMatchesForSmallFiles = true
     };
 
     public static Config Load()

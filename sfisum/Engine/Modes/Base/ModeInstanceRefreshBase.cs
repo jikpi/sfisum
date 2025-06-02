@@ -45,6 +45,15 @@ internal abstract class ModeInstanceRefreshBase(string directoryPath, string dig
         if (!Glob.Config.PrintToLog && !toConsole) return;
 
         using Logger logger = new Logger(toConsole, Glob.Config.PrintToLog);
+
+        if (!toConsole && Glob.Config.PrintToLog)
+        {
+            bool loggerToConsoleSet = logger.ToConsole;
+            logger.ToConsole = true;
+            logger.LogConsoleOnly("Saving log file...");
+            logger.ToConsole = loggerToConsoleSet;
+        }
+
         logger.Log(PrintUtils.ReportHeader("Report"), ConsoleColor.Cyan);
         logger.LogFileOnly($"Mode: {(fastRefresh ? "Fast refresh" : "Full refresh")}");
 
@@ -201,6 +210,14 @@ internal abstract class ModeInstanceRefreshBase(string directoryPath, string dig
                 logger.LogFileOnly("   " + SecondaryFiles[index].Path);
             }
 
+            if (!Glob.Config.FindMatchesInRefresh)
+            {
+                foreach (int index in CrosscheckSecondaryOrphansImap)
+                {
+                    logger.LogConsoleOnly("   " + SecondaryFiles[index].Path);
+                }
+            }
+
             logger.Log(PrintUtils.Separator(), ConsoleColor.Magenta);
         }
 
@@ -215,6 +232,14 @@ internal abstract class ModeInstanceRefreshBase(string directoryPath, string dig
             foreach (int index in CrosscheckPrimaryOrphansImap)
             {
                 logger.LogFileOnly("   " + PrimaryFiles[index].Path);
+            }
+            
+            if (!Glob.Config.FindMatchesInRefresh)
+            {
+                foreach (int index in CrosscheckPrimaryOrphansImap)
+                {
+                    logger.LogConsoleOnly("   " + PrimaryFiles[index].Path);
+                }
             }
 
             logger.Log(PrintUtils.Separator(), ConsoleColor.Magenta);
@@ -269,23 +294,26 @@ internal abstract class ModeInstanceRefreshBase(string directoryPath, string dig
             foreach ((Hash _, (List<int> primaryIndexes, List<int> secondaryIndexes)) in
                      CrosscheckPrimaryToSecondaryFoundImap)
             {
-                logger.Log("------", ConsoleColor.Green);
-                logger.Log("On disk:", ConsoleColor.Green);
+                logger.Log("   " + "------", ConsoleColor.Green);
+                logger.Log("   " + "On disk:", ConsoleColor.Green);
                 foreach (int index in primaryIndexes)
                 {
-                    logger.Log("   " + PrimaryFiles[index].Path);
+                    logger.Log("   " + "   " + PrimaryFiles[index].Path);
                 }
 
-                logger.Log("@ V Only in digest:", ConsoleColor.Green);
+                logger.Log("   " + "@ V Only in digest:", ConsoleColor.Green);
 
                 foreach (int index in secondaryIndexes)
                 {
-                    logger.Log("   " + SecondaryFiles[index].Path);
+                    logger.Log("   " + "   " + SecondaryFiles[index].Path);
                 }
             }
         }
 
         logger.Log("------", ConsoleColor.Cyan);
+
+        if (!Glob.Config.FindMatchesInRefresh) return;
+
         logger.Log("Unmatched files similarity:", ConsoleColor.Cyan);
         logger.LogConsoleOnly("Calculating...", ConsoleColor.Cyan);
 
@@ -301,13 +329,14 @@ internal abstract class ModeInstanceRefreshBase(string directoryPath, string dig
             var primary = PrimaryFiles[match.PrimaryIndex];
             var secondary = SecondaryFiles[match.SecondaryIndex];
 
-            logger.Log($"\nPotential match (confidence: {match.Confidence:P}):", ConsoleColor.Green);
-            logger.Log($"  Disk:   {primary.Path}");
-            logger.Log($"  Digest: {secondary.Path}");
-            logger.Log("  Reasons:");
+            logger.Log("   " + "   ");
+            logger.Log("   " + "   " + $"Potential match (confidence: {match.Confidence:P}):", ConsoleColor.Green);
+            logger.Log("   " + "   " + $"Disk:   {primary.Path} ({PrintUtils.ToHumanReadableSize(primary.Size)})");
+            logger.Log("   " + "   " + $"Digest: {secondary.Path} ({PrintUtils.ToHumanReadableSize(secondary.Size)})");
+            logger.Log("   " + "   " + "Reasons:");
             foreach (var reason in match.MatchReasons)
             {
-                logger.Log($"    - {reason}");
+                logger.Log("   " + "   " + $"- {reason}");
             }
         }
 
@@ -360,10 +389,23 @@ internal abstract class ModeInstanceRefreshBase(string directoryPath, string dig
         matchedPrimaryImap = [];
         matchedSecondaryImap = [];
 
+        bool ignoreSmallFiles = Glob.Config.SkipRefreshMatchesForSmallFiles;
+        const long sizeThreshold = Constants.RefreshMatchMinFileSize;
+
         foreach (var primaryIndex in CrosscheckPrimaryOrphansImap)
         {
+            if (ignoreSmallFiles && PrimaryFiles[primaryIndex].Size < sizeThreshold)
+            {
+                continue;
+            }
+
             foreach (var secondaryIndex in CrosscheckSecondaryOrphansImap)
             {
+                if (ignoreSmallFiles && SecondaryFiles[secondaryIndex].Size < sizeThreshold)
+                {
+                    continue;
+                }
+
                 double confidence = 0.0;
                 List<string> reasons = [];
 

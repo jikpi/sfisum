@@ -7,4 +7,6 @@ internal static class Constants
 
     public const float
         PredictedStructureCapacityPercentage = 0.1f; //What % of the max size is allocated for set structures.
+    
+    public const long RefreshMatchMinFileSize = 4 * 1024; // 4KB
 }
